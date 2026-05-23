@@ -1,6 +1,7 @@
 # Import python packages
 import streamlit as st
 import requests
+import pandas as pd
 
 from snowflake.snowpark.functions import col
 
@@ -25,13 +26,20 @@ session = cnx.session()
 
 # Pull fruit options from Snowflake
 my_dataframe = session.table("smoothies.public.fruit_options") \
-    .select(col("FRUIT_NAME")) \
-    .collect()
+    .select(col("FRUIT_NAME"), col("SEARCH_ON"))
+
+# Convert Snowpark DataFrame to Pandas DataFrame
+pd_df = my_dataframe.to_pandas()
+
+# Display dataframe temporarily
+st.dataframe(pd_df, use_container_width=True)
+
+st.stop()
 
 # Multi-select widget
 ingredients_list = st.multiselect(
     'Choose up to 5 ingredients:',
-    my_dataframe,
+    pd_df["FRUIT_NAME"],
     max_selections=5
 )
 
