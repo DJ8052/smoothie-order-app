@@ -1,7 +1,7 @@
 # Import python packages
 import streamlit as st
 
-from snowflake.snowpark.context import get_active_session
+from snowflake.snowpark.functions import col
 
 # Write directly to the app
 st.title("Customize Your Smoothie! :cup_with_straw:")
@@ -17,18 +17,23 @@ st.write(
     name_on_order
 )
 
-session = get_active_session()
+# Create Snowflake connection
+cnx = st.connection("snowflake")
+session = cnx.session()
 
+# Pull fruit options from Snowflake
 my_dataframe = session.table("smoothies.public.fruit_options") \
-    .select("FRUIT_NAME") \
+    .select(col("FRUIT_NAME")) \
     .collect()
 
+# Multi-select widget
 ingredients_list = st.multiselect(
     'Choose up to 5 ingredients:',
     my_dataframe,
     max_selections=5
 )
 
+# Only continue if ingredients selected
 if ingredients_list:
 
     ingredients_string = ''
@@ -37,8 +42,7 @@ if ingredients_list:
 
         ingredients_string += fruit_chosen + ' '
 
-    # st.write(ingredients_string)
-
+    # Insert statement
     my_insert_stmt = f"""
         insert into smoothies.public.orders
         (ingredients, name_on_order)
@@ -46,6 +50,7 @@ if ingredients_list:
         ('{ingredients_string}', '{name_on_order}')
     """
 
+    # Submit button
     time_to_insert = st.button('Submit Order')
 
     if time_to_insert:
