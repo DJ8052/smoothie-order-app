@@ -1,5 +1,6 @@
 # Import python packages
 import streamlit as st
+import requests
 
 from snowflake.snowpark.functions import col
 
@@ -10,6 +11,7 @@ st.write(
     """Choose the fruits you want in your custom Smoothie!"""
 )
 
+# User input
 name_on_order = st.text_input('Name on Smoothie:')
 
 st.write(
@@ -61,3 +63,10 @@ if ingredients_list:
             f'Your Smoothie is ordered, {name_on_order}!',
             icon="✅"
         )
+
+# New section to display smoothiefruit nutrition information
+smoothiefroot_response = requests.get(
+    "https://my.smoothiefroot.com/api/fruit/watermelon"
+)
+
+st.text(smoothiefroot_response)
